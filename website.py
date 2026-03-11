@@ -16,7 +16,7 @@ st.subheader("Enter Parameters")
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    a = st.number_input("a (lattice constant)", value=0.5)
+    a = st.number_input("a ", value=0.5)
 
 with col2:
     A = st.number_input("A value", value=171400.0)
