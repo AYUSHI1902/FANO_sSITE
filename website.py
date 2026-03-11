@@ -44,41 +44,65 @@ if st.button("Plot Graph"):
         omega_exp = data.iloc[:,0].values
         I_exp = data.iloc[:,1].values
 
+         # fitting range
         mask = (omega_exp >= 440) & (omega_exp <= 560)
         omega_exp = omega_exp[mask]
         I_exp = I_exp[mask]
-        k = np.linspace(0,1,250)
+
+        # -------- SORT DATA (improves fitting stability) ----------
+        idx = np.argsort(omega_exp)
+        omega_exp = omega_exp[idx]
+        I_exp = I_exp[idx]
+
+
+        omega_peak = omega_exp[np.argmax(I_exp)]
+        #st.write("Experimental peak =", omega_peak)
+        # k values (high resolution better)
+        # k grid
+        k = np.linspace(0,1,2000)
+
+     #q=3
+     # -------- omega(k) ----------
+
+        
         omega_k_vals = np.sqrt(A + B*np.cos(np.pi*k/2))
 
-        # -------- FAST MODEL ----------
-        def fano_model(omega, q, L, Gamma, C, m, c, shift):
+       # -------- integration ----------
 
-         # vectorized calculation
+
+
+
+        def fano_model(omega,q,L,Gamma,shift,C,m,c):
+
          omega2D = omega[:,None] + shift
+
          eps = (omega2D - omega_k_vals)/(Gamma/2)
 
          integrand = np.exp(-(k**2 * L**2)/(4*a**2)) * ((q+eps)**2/(1+eps**2))
-         integrand = integrand*(2*np.pi*k)
 
-         I = simpson(integrand, k, axis=1)
+         integrand *= (2*np.pi*k)
+
+         I = np.trapezoid(integrand, k, axis=1)
 
          background = m*omega + c
+
          return C*I + background
 
+        popt,_ = curve_fit(
+             fano_model,
+             omega_exp,
+             I_exp,
+             p0=[2,5,6,0,100,0,10],
+             bounds=([-50,0,1,-10,0,-10,-500],
+             [50,50,30,10,1e6,10,500]),
+             maxfev=40000
+           )
 
-     # -------- FITTING ----------
-        with st.spinner("Fitting running... please wait"):
-         popt, _ = curve_fit(
-         fano_model,
-          omega_exp,
-         I_exp,
-         p0=[4,4,8,200,0,10,0],
-         bounds=([0,0,1,0,-10,-100,-10],[20,20,30,1e6,10,100,10]),
-          maxfev=20000
-         )
+    
+        q,L,Gamma,shift,C,m,c = popt
 
-
-        q,L,Gamma,C,m,c,shift = popt
+      # fitted curve
+        fit = fano_model(omega_exp, *popt)
 
         st.subheader("Final Fitted Values")
         st.write("q =",round(q,3))
