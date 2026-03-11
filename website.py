@@ -107,7 +107,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         st.write("L =",round(L,3),"nm")
         st.write("Gamma =",round(Gamma,3))
         #print("Shift =",round(shift,3))
-        st.write("omega_k_val =",omega_k_vals)
+        #st.write("omega_k_val =",omega_k_vals)
 
 
 # plot
