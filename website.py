@@ -34,9 +34,7 @@ uploaded_file = st.file_uploader(
 
 
 # -------- LOAD DATA ----------
-
-
-if st.button("Plot Graph"):
+with st.spinner("Fitting Raman spectrum... Please wait"):
 
     if uploaded_file is not None:
 
