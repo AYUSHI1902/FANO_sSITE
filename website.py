@@ -41,7 +41,8 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
           data = pd.read_excel(uploaded_file, header=None)
     else: 
           data = pd.read_csv(uploaded_file, sep=None, engine="python", header=None)
-        st.write(data)
+    st.write(data)
+     
         omega_exp = data.iloc[:,0].values
         I_exp = data.iloc[:,1].values
 
