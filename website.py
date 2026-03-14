@@ -37,8 +37,12 @@ uploaded_file = st.file_uploader(
 with st.spinner("Fitting Raman spectrum... Please wait"):
 
     if uploaded_file is not None:
+        if uploaded_file.name.endswith(".xlsx"):
+        data = pd.read_excel(uploaded_file, header=None)
 
+    else: 
         data = pd.read_csv(uploaded_file, sep=None, engine="python", header=None)
+
         omega_exp = data.iloc[:,0].values
         I_exp = data.iloc[:,1].values
 
