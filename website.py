@@ -29,7 +29,7 @@ st.subheader("Upload Raman File")
 
 uploaded_file = st.file_uploader(
     "Upload CSV/TXT file (two columns)",
-    type=["csv","txt"]
+    type=["csv","txt","xlsx"]
 )
 
 
