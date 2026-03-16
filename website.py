@@ -2,20 +2,21 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 import pandas as pd
+from scipy.integrate import simpson
 from scipy.optimize import curve_fit
 
 st.set_page_config(page_title="Raman-Fano line-shape", layout="centered")
 
-st.title("Raman-Fano line-shape plot (Gamma from FWHM)")
+st.title("Raman-Fano line-shape plot, gamma")
 st.write("Enter parameters and upload file")
 
-# ---------------- PARAMETERS ----------------
+# -------- PARAMETER ----------
 st.subheader("Enter Parameters")
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    a = st.number_input("a", value=0.5)
+    a = st.number_input("a ", value=0.5)
 
 with col2:
     A = st.number_input("A value", value=171400.0)
@@ -23,7 +24,7 @@ with col2:
 with col3:
     B = st.number_input("B value", value=100000.0)
 
-# ---------------- FILE UPLOAD ----------------
+# -------- FILE UPLOAD ----------
 st.subheader("Upload Raman File")
 
 uploaded_file = st.file_uploader(
@@ -31,12 +32,11 @@ uploaded_file = st.file_uploader(
     type=["csv", "txt", "xlsx"]
 )
 
-# ---------------- PROCESS DATA ----------------
-with st.spinner("Processing Raman spectrum..."):
+# -------- LOAD DATA ----------
+with st.spinner("Fitting Raman spectrum... Please wait"):
 
     if uploaded_file is not None:
 
-        # Read file
         if uploaded_file.name.endswith(".xlsx"):
             data = pd.read_excel(uploaded_file, header=None)
         else:
@@ -44,52 +44,33 @@ with st.spinner("Processing Raman spectrum..."):
 
         st.write("Uploaded file:", uploaded_file.name)
 
-        omega_exp = data.iloc[:,0].values
-        I_exp = data.iloc[:,1].values
+        omega_exp = data.iloc[:, 0].values
+        I_exp = data.iloc[:, 1].values
 
-        # Raman range
+        # fitting range
         mask = (omega_exp >= 440) & (omega_exp <= 560)
         omega_exp = omega_exp[mask]
         I_exp = I_exp[mask]
 
-        # Sort data
+        # -------- SORT DATA ----------
         idx = np.argsort(omega_exp)
         omega_exp = omega_exp[idx]
         I_exp = I_exp[idx]
 
-        # Peak position
-        peak_index = np.argmax(I_exp)
-        omega_peak = omega_exp[peak_index]
+        omega_peak = omega_exp[np.argmax(I_exp)]
+        st.write("peak", omega_peak)
+        # k grid
+        k = np.linspace(0, 1, 2000)
 
-        st.write("Peak position =", round(omega_peak,3))
-
-        # -------- Gamma from FWHM --------
-        half_max = np.max(I_exp) / 2
-
-        left = peak_index
-        while left > 0 and I_exp[left] > half_max:
-            left -= 1
-
-        right = peak_index
-        while right < len(I_exp)-1 and I_exp[right] > half_max:
-            right += 1
-
-        Gamma = omega_exp[right] - omega_exp[left]
-
-        st.write("Gamma (FWHM) =", round(Gamma,3))
-
-        # -------- k grid --------
-        k = np.linspace(0,1,2000)
-
-        # Phonon dispersion
+        # -------- omega(k) ----------
         omega_k_vals = np.sqrt(A + B*np.cos(np.pi*k/2))
 
-        # -------- Fano model (Gamma fixed) --------
-        def fano_model(omega, q, L, shift, C, m, c):
+        # -------- FANO MODEL ----------
+        def fano_model(omega, q, L, Gamma, shift, C, m, c):
 
-            omega2D = omega[:,None] + shift
+            omega2D = omega[:, None] + shift
 
-            eps = (omega2D - omega_k_vals)/(Gamma/2)
+            eps = (omega2D - omega_k_vals) / (Gamma/2)
 
             integrand = np.exp(-(k**2 * L**2)/(4*a**2)) * ((q+eps)**2/(1+eps**2))
 
@@ -101,37 +82,30 @@ with st.spinner("Processing Raman spectrum..."):
 
             return C*I + background
 
-        # -------- Curve fitting --------
-        popt,_ = curve_fit(
+        popt, _ = curve_fit(
             fano_model,
             omega_exp,
             I_exp,
-            p0=[2,5,0,100,0,10],
-            bounds=([-50,0,-10,0,-10,-500],
-                    [50,50,10,1e6,10,500]),
+            p0=[2,5,6,0,100,0,10],
+            bounds=([-50,0,1,-10,0,-10,-500],
+                    [50,50,30,10,1e6,10,500]),
             maxfev=40000
         )
+        
+        q, L, Gamma, shift, C, m, c = popt
 
-        q, L, shift, C, m, c = popt
+        fit = fano_model(omega_exp, *popt)
 
-        fit = fano_model(omega_exp,*popt)
-
-        # -------- Results --------
-        st.subheader("Final Parameters")
-
+        st.subheader("Final Fitted Values")
         st.write("q =", round(q,3))
-        st.write("L =", round(L,3),"nm")
-        st.write("Gamma (FWHM) =", round(Gamma,3))
+        st.write("L =", round(L,3), "nm")
+        st.write("Gamma =", round(Gamma,3))
 
-        # -------- Plot --------
+        # plot
         fig, ax = plt.subplots(figsize=(6,5))
-
+        
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
         ax.plot(omega_exp, fit, 'b-', label="Fitted")
-
-        ax.set_xlabel("Raman Shift (cm⁻¹)")
-        ax.set_ylabel("Intensity")
-
         ax.legend()
         ax.grid()
 
