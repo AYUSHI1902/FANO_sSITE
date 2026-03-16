@@ -103,9 +103,8 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
 
         # plot
         fig, ax = plt.subplots(figsize=(6,5))
-        peak_fit = omega_exp[np.argmax(fit)]
-        ax.axvline(peak_fit - Gamma/2, color='purple', linestyle='--')
-        ax.axvline(peak_fit + Gamma/2, color='purple', linestyle='--')
+        half_max = np.max(fit)/2
+        ax.hlines(half_max, peak_fit - Gamma/2, peak_fit + Gamma/2, color='black', linewidth=2)
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
         ax.plot(omega_exp, fit, 'b-', label="Fitted")
         ax.legend()
