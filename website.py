@@ -2,12 +2,11 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 import pandas as pd
-from scipy.integrate import simpson
 from scipy.optimize import curve_fit
 
 st.set_page_config(page_title="Raman-Fano line-shape", layout="centered")
 
-st.title("Raman-Fano line-shape plot, gamma")
+st.title("Raman-Fano line-shape plot (Gamma from FWHM)")
 st.write("Enter parameters and upload file")
 
 # -------- PARAMETER ----------
@@ -33,7 +32,7 @@ uploaded_file = st.file_uploader(
 )
 
 # -------- LOAD DATA ----------
-with st.spinner("Fitting Raman spectrum... Please wait"):
+with st.spinner("Processing Raman spectrum..."):
 
     if uploaded_file is not None:
 
@@ -47,7 +46,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         omega_exp = data.iloc[:, 0].values
         I_exp = data.iloc[:, 1].values
 
-        # fitting range
+        # -------- fitting range ----------
         mask = (omega_exp >= 440) & (omega_exp <= 560)
         omega_exp = omega_exp[mask]
         I_exp = I_exp[mask]
@@ -57,16 +56,30 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         omega_exp = omega_exp[idx]
         I_exp = I_exp[idx]
 
+        # -------- Peak position ----------
         omega_peak = omega_exp[np.argmax(I_exp)]
-        st.write("peak", omega_peak)
-        # k grid
+        st.write("Peak position =", round(omega_peak,3))
+
+        # -------- Calculate Gamma from FWHM ----------
+        half_max = np.max(I_exp) / 2
+
+        indices = np.where(I_exp >= half_max)[0]
+
+        left = omega_exp[indices[0]]
+        right = omega_exp[indices[-1]]
+
+        Gamma = right - left
+
+        st.write("Gamma (FWHM) =", round(Gamma,3))
+
+        # -------- k grid ----------
         k = np.linspace(0, 1, 2000)
 
         # -------- omega(k) ----------
         omega_k_vals = np.sqrt(A + B*np.cos(np.pi*k/2))
 
         # -------- FANO MODEL ----------
-        def fano_model(omega, q, L, Gamma, shift, C, m, c):
+        def fano_model(omega, q, L, shift, C, m, c):
 
             omega2D = omega[:, None] + shift
 
@@ -82,33 +95,38 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
 
             return C*I + background
 
+        # -------- Curve fitting (Gamma removed) ----------
         popt, _ = curve_fit(
             fano_model,
             omega_exp,
             I_exp,
-            p0=[2,5,6,0,100,0,10],
-            bounds=([-50,0,1,-10,0,-10,-500],
-                    [50,50,30,10,1e6,10,500]),
+            p0=[2,5,0,100,0,10],
+            bounds=([-50,0,-10,0,-10,-500],
+                    [50,50,10,1e6,10,500]),
             maxfev=40000
         )
 
-        q, L, Gamma, shift, C, m, c = popt
+        q, L, shift, C, m, c = popt
 
         fit = fano_model(omega_exp, *popt)
 
-        st.subheader("Final Fitted Values")
+        st.subheader("Final Parameters")
+
         st.write("q =", round(q,3))
         st.write("L =", round(L,3), "nm")
-        st.write("Gamma =", round(Gamma,3))
+        st.write("Gamma (FWHM) =", round(Gamma,3))
 
-        # plot
+        # -------- Plot ----------
         fig, ax = plt.subplots(figsize=(6,5))
-        half_max = np.max(fit)/2
-        ax.hlines(half_max, peak_fit - Gamma/2, peak_fit + Gamma/2, color='black', linewidth=2)
+
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
         ax.plot(omega_exp, fit, 'b-', label="Fitted")
+
         ax.legend()
         ax.grid()
+
+        ax.set_xlabel("Raman Shift (cm⁻¹)")
+        ax.set_ylabel("Intensity")
 
         st.pyplot(fig)
 
