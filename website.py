@@ -58,7 +58,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         I_exp = I_exp[idx]
 
         omega_peak = omega_exp[np.argmax(I_exp)]
-
+        st.write("peak", omega_peak)
         # k grid
         k = np.linspace(0, 1, 2000)
 
