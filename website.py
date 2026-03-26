@@ -2,7 +2,6 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 import pandas as pd
-from scipy.integrate import simpson
 from scipy.optimize import curve_fit
 
 st.set_page_config(page_title="Raman-Fano line-shape", layout="centered")
@@ -10,13 +9,13 @@ st.set_page_config(page_title="Raman-Fano line-shape", layout="centered")
 st.title("Raman-Fano line-shape plot, gamma")
 st.write("Enter parameters and upload file")
 
-# -------- PARAMETER ----------
+# -------- PARAMETERS ----------
 st.subheader("Enter Parameters")
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    a = st.number_input("a ", value=0.5)
+    a = st.number_input("a", value=0.5)
 
 with col2:
     A = st.number_input("A value", value=171400.0)
@@ -24,14 +23,15 @@ with col2:
 with col3:
     B = st.number_input("B value", value=100000.0)
 
-# -------- MODE SELECTION ----------
+# -------- MODE ----------
 st.subheader("Select Mode")
 
 mode = st.selectbox(
     "Choose model type",
     ["Fano and Confinement", "Confinement", "Fano"]
 )
-# -------- FILE UPLOAD ----------
+
+# -------- FILE ----------
 st.subheader("Upload Raman File")
 
 uploaded_file = st.file_uploader(
@@ -39,119 +39,112 @@ uploaded_file = st.file_uploader(
     type=["csv", "txt", "xlsx"]
 )
 
-# -------- LOAD DATA ----------
+# -------- PROCESS ----------
 with st.spinner("Fitting Raman spectrum... Please wait"):
 
     if uploaded_file is not None:
 
+        # LOAD DATA
         if uploaded_file.name.endswith(".xlsx"):
             data = pd.read_excel(uploaded_file, header=None)
         else:
             data = pd.read_csv(uploaded_file, sep=None, engine="python", header=None)
 
-        st.write("Uploaded file:", uploaded_file.name)
-
         omega_exp = data.iloc[:, 0].values
         I_exp = data.iloc[:, 1].values
 
-        # fitting range
+        # FILTER RANGE
         mask = (omega_exp >= 440) & (omega_exp <= 560)
         omega_exp = omega_exp[mask]
         I_exp = I_exp[mask]
 
-        # -------- SORT DATA ----------
+        # SORT
         idx = np.argsort(omega_exp)
         omega_exp = omega_exp[idx]
         I_exp = I_exp[idx]
 
-        omega_peak = omega_exp[np.argmax(I_exp)]
-        st.write("peak", omega_peak)
-        # k grid
+        st.write("Peak:", omega_exp[np.argmax(I_exp)])
+
+        # k GRID
         k = np.linspace(0, 1, 2000)
+        omega_k_vals = np.sqrt(A + B * np.cos(np.pi * k / 2))
 
-        # -------- omega(k) ----------
-        omega_k_vals = np.sqrt(A + B*np.cos(np.pi*k/2))
-
-        # -------- FANO MODEL ----------
+        # -------- MODEL ----------
         def fano_model(omega, q, L, Gamma, shift, C, m, c):
-
             omega2D = omega[:, None] + shift
+            eps = (omega2D - omega_k_vals) / (Gamma / 2)
 
-            eps = (omega2D - omega_k_vals) / (Gamma/2)
-
-            integrand = np.exp(-(k**2 * L**2)/(4*a**2)) * ((q+eps)**2/(1+eps**2))
-
-            integrand *= (2*np.pi*k)
+            integrand = np.exp(-(k**2 * L**2) / (4 * a**2)) * ((q + eps)**2 / (1 + eps**2))
+            integrand *= (2 * np.pi * k)
 
             I = np.trapezoid(integrand, k, axis=1)
+            background = m * omega + c
 
-            background = m*omega + c
+            return C * I + background
 
-            return C*I + background
+        # -------- FITTING ----------
+        if mode == "Fano and Confinement":
 
-       # -------- FITTING BASED ON MODE ----------
+            popt, _ = curve_fit(
+                fano_model,
+                omega_exp,
+                I_exp,
+                p0=[2, 5, 6, 0, 100, 0, 10],
+                bounds=([-50, 0, 1, -10, 0, -10, -500],
+                        [50, 50, 30, 10, 1e6, 10, 500]),
+                maxfev=40000
+            )
 
-if mode == "Fano and Confinement":
-    
-    popt, _ = curve_fit(
-        fano_model,
-        omega_exp,
-        I_exp,
-        p0=[2,5,6,0,100,0,10],
-        bounds=([-50,0,1,-10,0,-10,-500],
-                [50,50,30,10,1e6,10,500]),
-        maxfev=40000
-    )
+            q, L, Gamma, shift, C, m, c = popt
 
-    q, L, Gamma, shift, C, m, c = popt
+        elif mode == "Confinement":
 
+            def model_fixed_q(omega, L, Gamma, shift, C, m, c):
+                return fano_model(omega, 20000, L, Gamma, shift, C, m, c)
 
-elif mode == "Confinement":
-    
-    def model_fixed_q(omega, L, Gamma, shift, C, m, c):
-        return fano_model(omega, 20000, L, Gamma, shift, C, m, c)
+            popt, _ = curve_fit(
+                model_fixed_q,
+                omega_exp,
+                I_exp,
+                p0=[5, 6, 0, 100, 0, 10],
+                bounds=([0, 1, -10, 0, -10, -500],
+                        [50, 30, 10, 1e6, 10, 500]),
+                maxfev=40000
+            )
 
-    popt, _ = curve_fit(
-        model_fixed_q,
-        omega_exp,
-        I_exp,
-        p0=[5,6,0,100,0,10],
-        bounds=([0,1,-10,0,-10,-500],
-                [50,30,10,1e6,10,500]),
-        maxfev=40000
-    )
+            L, Gamma, shift, C, m, c = popt
+            q = 20000
 
-    L, Gamma, shift, C, m, c = popt
-    q = 20000  # fixed
+        elif mode == "Fano":
 
+            def model_fixed_L(omega, q, Gamma, shift, C, m, c):
+                return fano_model(omega, q, 1000, Gamma, shift, C, m, c)
 
-elif mode == "Fano":
-    
-    def model_fixed_L(omega, q, Gamma, shift, C, m, c):
-        return fano_model(omega, q, 1000, Gamma, shift, C, m, c)
+            popt, _ = curve_fit(
+                model_fixed_L,
+                omega_exp,
+                I_exp,
+                p0=[2, 6, 0, 100, 0, 10],
+                bounds=([-50, 1, -10, 0, -10, -500],
+                        [50, 30, 10, 1e6, 10, 500]),
+                maxfev=40000
+            )
 
-    popt, _ = curve_fit(
-        model_fixed_L,
-        omega_exp,
-        I_exp,
-        p0=[2,6,0,100,0,10],
-        bounds=([-50,1,-10,0,-10,-500],
-                [50,30,10,1e6,10,500]),
-        maxfev=40000
-    )
+            q, Gamma, shift, C, m, c = popt
+            L = 1000
 
-    q, Gamma, shift, C, m, c = popt
-    L = 1000  # fixed
-        fit = fano_model(omega_exp, *popt)
+        # -------- FINAL FIT ----------
+        fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
 
+        # -------- OUTPUT ----------
         st.subheader("Final Fitted Values")
-        st.write("q =", round(q,3))
-        st.write("L =", round(L,3), "nm")
-        st.write("Gamma =", round(Gamma,3))
+        st.write("Mode:", mode)
+        st.write("q =", round(q, 3))
+        st.write("L =", round(L, 3), "nm")
+        st.write("Gamma =", round(Gamma, 3))
 
-        # plot
-        fig, ax = plt.subplots(figsize=(6,5))
-        
+        # -------- PLOT ----------
+        fig, ax = plt.subplots(figsize=(6, 5))
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
         ax.plot(omega_exp, fit, 'b-', label="Fitted")
         ax.legend()
