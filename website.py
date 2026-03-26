@@ -24,6 +24,13 @@ with col2:
 with col3:
     B = st.number_input("B value", value=100000.0)
 
+# -------- MODE SELECTION ----------
+st.subheader("Select Mode")
+
+mode = st.selectbox(
+    "Choose model type",
+    ["Fano and Confinement", "Confinement", "Fano"]
+)
 # -------- FILE UPLOAD ----------
 st.subheader("Upload Raman File")
 
@@ -82,18 +89,59 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
 
             return C*I + background
 
-        popt, _ = curve_fit(
-            fano_model,
-            omega_exp,
-            I_exp,
-            p0=[2,5,6,0,100,0,10],
-            bounds=([-50,0,1,-10,0,-10,-500],
-                    [50,50,30,10,1e6,10,500]),
-            maxfev=40000
-        )
-        
-        q, L, Gamma, shift, C, m, c = popt
+       # -------- FITTING BASED ON MODE ----------
 
+if mode == "Fano and Confinement":
+    
+    popt, _ = curve_fit(
+        fano_model,
+        omega_exp,
+        I_exp,
+        p0=[2,5,6,0,100,0,10],
+        bounds=([-50,0,1,-10,0,-10,-500],
+                [50,50,30,10,1e6,10,500]),
+        maxfev=40000
+    )
+
+    q, L, Gamma, shift, C, m, c = popt
+
+
+elif mode == "Confinement":
+    
+    def model_fixed_q(omega, L, Gamma, shift, C, m, c):
+        return fano_model(omega, 20000, L, Gamma, shift, C, m, c)
+
+    popt, _ = curve_fit(
+        model_fixed_q,
+        omega_exp,
+        I_exp,
+        p0=[5,6,0,100,0,10],
+        bounds=([0,1,-10,0,-10,-500],
+                [50,30,10,1e6,10,500]),
+        maxfev=40000
+    )
+
+    L, Gamma, shift, C, m, c = popt
+    q = 20000  # fixed
+
+
+elif mode == "Fano":
+    
+    def model_fixed_L(omega, q, Gamma, shift, C, m, c):
+        return fano_model(omega, q, 1000, Gamma, shift, C, m, c)
+
+    popt, _ = curve_fit(
+        model_fixed_L,
+        omega_exp,
+        I_exp,
+        p0=[2,6,0,100,0,10],
+        bounds=([-50,1,-10,0,-10,-500],
+                [50,30,10,1e6,10,500]),
+        maxfev=40000
+    )
+
+    q, Gamma, shift, C, m, c = popt
+    L = 1000  # fixed
         fit = fano_model(omega_exp, *popt)
 
         st.subheader("Final Fitted Values")
