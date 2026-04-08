@@ -114,7 +114,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
 
             L, Gamma, shift, C, m, c = popt
             
-            q = float('inf')
+            q = 10000000000
 
         elif mode == "Fano":
 
