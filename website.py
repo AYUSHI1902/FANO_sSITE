@@ -100,7 +100,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         elif mode == "Confinement":
 
             def model_fixed_q(omega, L, Gamma, shift, C, m, c):
-                return fano_model(omega, 20000, L, Gamma, shift, C, m, c)
+                return fano_model(omega, 10000000000, L, Gamma, shift, C, m, c)
 
             popt, _ = curve_fit(
                 model_fixed_q,
