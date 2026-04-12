@@ -93,7 +93,8 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
                 p0=[-50, 5, 6, 0, 100, 0, 10],
                 bounds=([-50, 0, 1, -10, 0, -10, -500],
                         [50, 50, 30, 10, 1e6, 10, 500]),
-                maxfev=40000
+                maxfev=40000,
+                full_output=True 
             )
 
             q, L, Gamma, shift, C, m, c = popt
@@ -137,7 +138,11 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
 
         # -------- FINAL FIT ----------
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
-
+        nfev = infodict["nfev"]   # number of function evaluations
+        print(f"Number of iterations (function calls) = {nfev}")
+        I_fit = fano_model(omega_exp, *popt)
+        r2 = r2_score(I_exp, I_fit)
+        print(f"R² = {r2:.4f}")
         # -------- OUTPUT ----------
         st.subheader("Final Fitted Values")
         st.write("Mode:", mode)
