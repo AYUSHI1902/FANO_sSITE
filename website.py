@@ -127,8 +127,8 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
                 omega_exp,
                 I_exp,
                 p0=[0, 6, 0, 100, 0, 10],
-                bounds=([-10, 1, -10, 0, -10, -500],
-                        [10, 30, 10, 1e6, 10, 500]),
+                bounds=([-50, 1, -10, 0, -10, -500],
+                        [50, 30, 10, 1e6, 10, 500]),
                 maxfev=40000 
             )
 
