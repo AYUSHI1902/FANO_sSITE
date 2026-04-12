@@ -150,8 +150,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         st.write("q =", round(q, 3))
         st.write("L =", round(L, 3), "nm")
         st.write("Gamma =", round(Gamma, 3))
-        st.write("Function evaluations:", nfev)
-        st.write("R² =", round(r2, 5))
+       
         # -------- PLOT ----------
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
