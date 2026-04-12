@@ -139,11 +139,10 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         # -------- FINAL FIT ----------
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
         # Manual R²
-            ss_res = np.sum((I_exp - fit) ** 2)
-            ss_tot = np.sum((I_exp - np.mean(I_exp)) ** 2)
-            r2 = 1 - ss_res / ss_tot if ss_tot != 0 else np.nan
-
-            nfev = infodict.get("nfev", "Not available for this mode")
+        ss_res = np.sum((I_exp - fit) ** 2)
+        ss_tot = np.sum((I_exp - np.mean(I_exp)) ** 2)
+        r2 = 1 - ss_res / ss_tot if ss_tot != 0 else np.nan
+        nfev = infodict.get("nfev", "Not available for this mode")
 
         # -------- OUTPUT ----------
         st.subheader("Final Fitted Values")
