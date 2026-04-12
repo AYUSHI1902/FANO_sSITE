@@ -82,11 +82,11 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             background = m * omega + c
 
             return C * I + background
-            infodict = {"nfev": None}
+        infodict = {"nfev": None}
         # -------- FITTING ----------
         if mode == "Fano and Confinement":
 
-            popt, _ = curve_fit(
+            popt, pcov, infodict, mesg, ier = curve_fit(
                 fano_model,
                 omega_exp,
                 I_exp,
