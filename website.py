@@ -82,7 +82,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             background = m * omega + c
 
             return C * I + background
-
+            infodict = {"nfev": None}
         # -------- FITTING ----------
         if mode == "Fano and Confinement":
 
@@ -138,18 +138,21 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
 
         # -------- FINAL FIT ----------
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
-        nfev = infodict["nfev"]   # number of function evaluations
-        print(f"Number of iterations (function calls) = {nfev}")
-        I_fit = fano_model(omega_exp, *popt)
-        r2 = r2_score(I_exp, I_fit)
-        print(f"R² = {r2:.4f}")
+        # Manual R²
+            ss_res = np.sum((I_exp - fit) ** 2)
+            ss_tot = np.sum((I_exp - np.mean(I_exp)) ** 2)
+            r2 = 1 - ss_res / ss_tot if ss_tot != 0 else np.nan
+
+            nfev = infodict.get("nfev", "Not available for this mode")
+
         # -------- OUTPUT ----------
         st.subheader("Final Fitted Values")
         st.write("Mode:", mode)
         st.write("q =", round(q, 3))
         st.write("L =", round(L, 3), "nm")
         st.write("Gamma =", round(Gamma, 3))
-
+        st.write("Function evaluations:", nfev)
+        st.write("R² =", round(r2, 5))
         # -------- PLOT ----------
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
