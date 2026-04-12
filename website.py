@@ -53,27 +53,24 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         omega_exp = data.iloc[:, 0].values
         I_exp = data.iloc[:, 1].values
 
-        # -------- NORMALIZE (IMPORTANT FIX) ----------
-        I_exp = I_exp / np.max(I_exp)
-
-        # -------- FILTER RANGE ----------
+        # FILTER RANGE
         mask = (omega_exp >= 440) & (omega_exp <= 560)
         omega_exp = omega_exp[mask]
         I_exp = I_exp[mask]
 
-        # -------- SORT ----------
+        # SORT
         idx = np.argsort(omega_exp)
         omega_exp = omega_exp[idx]
         I_exp = I_exp[idx]
 
         st.write("Peak:", omega_exp[np.argmax(I_exp)])
 
-        # -------- k GRID ----------
+        # k GRID
         k = np.linspace(0, 1, 2000)
         omega_k_vals = np.sqrt(A + B * np.cos(np.pi * k / 2))
 
         # -------- MODEL ----------
-        def fano_model(omega, q, L, Gamma, shift, C, c):
+        def fano_model(omega, q, L, Gamma, shift, C, m, c):
             omega2D = omega[:, None] + shift
             eps = (omega2D - omega_k_vals) / (Gamma / 2)
 
@@ -82,7 +79,9 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
 
             I = np.trapezoid(integrand, k, axis=1)
 
-            return C * I + c   # ✅ removed linear background
+            background = m * omega + c
+
+            return C * I + background
 
         # -------- FITTING ----------
         if mode == "Fano and Confinement":
@@ -91,46 +90,52 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
                 fano_model,
                 omega_exp,
                 I_exp,
-                p0=[-5, 5, 6, 0, 1, 0],   # better initial guess
+                p0=[4, 5, 6, 0, 100, 0, 10],
+                bounds=([-50, 0, 1, -10, 0, -10, -500],
+                        [50, 50, 30, 10, 1e6, 10, 500]),
                 maxfev=40000
             )
 
-            q, L, Gamma, shift, C, c = popt
+            q, L, Gamma, shift, C, m, c = popt
 
         elif mode == "Confinement":
 
-            def model_fixed_q(omega, L, Gamma, shift, C, c):
-                return fano_model(omega, 1000, L, Gamma, shift, C, c)
+            def model_fixed_q(omega, L, Gamma, shift, C, m, c):
+                return fano_model(omega, 1000, L, Gamma, shift, C, m, c)
 
             popt, _ = curve_fit(
                 model_fixed_q,
                 omega_exp,
                 I_exp,
-                p0=[5, 6, 0, 1, 0],
+                p0=[1, 6, 0, 100, 0, 10],
+                bounds=([0, 1, -10, 0, -10, -500],
+                        [50, 30, 10, 1e6, 10, 500]),
                 maxfev=40000
             )
 
-            L, Gamma, shift, C, c = popt
+            L, Gamma, shift, C, m, c = popt
             q = 1000
 
         elif mode == "Fano":
 
-            def model_fixed_L(omega, q, Gamma, shift, C, c):
-                return fano_model(omega, q, 1000, Gamma, shift, C, c)
+            def model_fixed_L(omega, q, Gamma, shift, C, m, c):
+                return fano_model(omega, q, 1000, Gamma, shift, C, m, c)
 
             popt, _ = curve_fit(
                 model_fixed_L,
                 omega_exp,
                 I_exp,
-                p0=[-5, 6, 0, 1, 0],
+                p0=[5, 6, 0, 100, 0, 10],
+                bounds=([-50, 1, -10, 0, -10, -500],
+                        [50, 30, 10, 1e6, 10, 500]),
                 maxfev=40000
             )
 
-            q, Gamma, shift, C, c = popt
+            q, Gamma, shift, C, m, c = popt
             L = 1000
 
         # -------- FINAL FIT ----------
-        fit = fano_model(omega_exp, q, L, Gamma, shift, C, c)
+        fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
 
         # -------- OUTPUT ----------
         st.subheader("Final Fitted Values")
