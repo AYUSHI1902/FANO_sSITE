@@ -82,7 +82,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             background = m * omega + c
 
             return C * I + background
-        infodict = {"nfev": None}
+        #infodict = {"nfev": None}
         # -------- FITTING ----------
         if mode == "Fano and Confinement":
 
@@ -93,8 +93,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
                 p0=[0, 5, 6, 0, 100, 0, 10],
                 bounds=([-10, 0, 1, -10, 0, -10, -500],
                         [10, 50, 30, 10, 1e6, 10, 500]),
-                maxfev=40000,
-                full_output=True 
+                maxfev=40000
             )
 
             q, L, Gamma, shift, C, m, c = popt
@@ -111,8 +110,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
                 p0=[1, 6, 0, 100, 0, 10],
                 bounds=([0, 1, -10, 0, -10, -500],
                         [50, 30, 10, 1e6, 10, 500]),
-                maxfev=40000,
-                full_output=True 
+                maxfev=40000 
             )
 
             L, Gamma, shift, C, m, c = popt
@@ -131,25 +129,20 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
                 p0=[0, 6, 0, 100, 0, 10],
                 bounds=([-10, 1, -10, 0, -10, -500],
                         [10, 30, 10, 1e6, 10, 500]),
-                maxfev=40000,
-                full_output=True 
+                maxfev=40000 
             )
 
             q, Gamma, shift, C, m, c = popt
             L = 100
 
         # -------- FINAL FIT ----------
-        #fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
-        interp_func = interp1d(omega_exp, I_exp, kind='cubic')
+        fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
+        #interp_func = interp1d(omega_exp, I_exp, kind='cubic')
 
-        fit = interp_func(omega_exp)
+        #fit = interp_func(omega_exp)
 
-        r2 = 0.99
-        # Manual R²
-        ss_res = np.sum((I_exp - fit) ** 2)
-        ss_tot = np.sum((I_exp - np.mean(I_exp)) ** 2)
-        r2 = 1 - ss_res / ss_tot if ss_tot != 0 else np.nan
-        nfev = infodict.get("nfev", "Not available for this mode")
+       
+     
 
         # -------- OUTPUT ----------
         st.subheader("Final Fitted Values")
