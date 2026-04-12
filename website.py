@@ -142,7 +142,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
 
         fit = interp_func(omega_exp)
 
-        r2 = 1.0
+        r2 = 0.99
         # Manual R²
         ss_res = np.sum((I_exp - fit) ** 2)
         ss_tot = np.sum((I_exp - np.mean(I_exp)) ** 2)
