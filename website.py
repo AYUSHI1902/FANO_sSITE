@@ -3,7 +3,6 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.optimize import curve_fit
-from scipy.interpolate import interp1d
 
 st.set_page_config(page_title="Raman-Fano line-shape", layout="centered")
 
@@ -12,6 +11,7 @@ st.write("Enter parameters and upload file")
 
 # -------- PARAMETERS ----------
 st.subheader("Enter Parameters")
+
 
 col1, col2, col3 = st.columns(3)
 
@@ -82,20 +82,19 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             background = m * omega + c
 
             return C * I + background
-
-        #infodict = {"nfev": None}
-
+        infodict = {"nfev": None}
         # -------- FITTING ----------
         if mode == "Fano and Confinement":
 
-            popt, _ = curve_fit(
+            popt, pcov, infodict, mesg, ier = curve_fit(
                 fano_model,
                 omega_exp,
                 I_exp,
-                p0=[0, 5, 6, 0, 100, 0, 10],
+                p0=[-50, 5, 6, 0, 100, 0, 10],
                 bounds=([-50, 0, 1, -10, 0, -10, -500],
                         [50, 50, 30, 10, 1e6, 10, 500]),
-                maxfev=40000
+                maxfev=40000,
+                full_output=True 
             )
 
             q, L, Gamma, shift, C, m, c = popt
@@ -109,38 +108,41 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
                 model_fixed_q,
                 omega_exp,
                 I_exp,
-                p0=[5, 6, 0, 100, 0, 10],
+                p0=[1, 6, 0, 100, 0, 10],
                 bounds=([0, 1, -10, 0, -10, -500],
                         [50, 30, 10, 1e6, 10, 500]),
                 maxfev=40000
             )
 
             L, Gamma, shift, C, m, c = popt
+            
             q = 1000
 
         elif mode == "Fano":
 
             def model_fixed_L(omega, q, Gamma, shift, C, m, c):
-                return fano_model(omega, q, 500, Gamma, shift, C, m, c)
+                return fano_model(omega, q, 1000, Gamma, shift, C, m, c)
 
             popt, _ = curve_fit(
                 model_fixed_L,
                 omega_exp,
                 I_exp,
-                p0=[1, 6, 0, 100, 0, 10],
+                p0=[5, 6, 0, 100, 0, 10],
                 bounds=([-50, 1, -10, 0, -10, -500],
                         [50, 30, 10, 1e6, 10, 500]),
                 maxfev=40000
             )
 
             q, Gamma, shift, C, m, c = popt
-            L = 500
+            L = 1000
 
         # -------- FINAL FIT ----------
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
-
-        #interp_func = interp1d(omega_exp, I_exp, kind='cubic')
-        #fit = interp_func(omega_exp)
+        # Manual R²
+        ss_res = np.sum((I_exp - fit) ** 2)
+        ss_tot = np.sum((I_exp - np.mean(I_exp)) ** 2)
+        r2 = 1 - ss_res / ss_tot if ss_tot != 0 else np.nan
+        nfev = infodict.get("nfev", "Not available for this mode")
 
         # -------- OUTPUT ----------
         st.subheader("Final Fitted Values")
@@ -148,12 +150,12 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         st.write("q =", round(q, 3))
         st.write("L =", round(L, 3), "nm")
         st.write("Gamma =", round(Gamma, 3))
-
+        st.write("Function evaluations:", nfev)
+        st.write("R² =", round(r2, 5))
         # -------- PLOT ----------
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
         ax.plot(omega_exp, fit, 'b-', label="Fitted")
-
         ax.legend()
         ax.grid()
 
