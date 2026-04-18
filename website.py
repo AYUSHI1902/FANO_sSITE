@@ -98,7 +98,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             )
 
             q, L, Gamma, shift, C, m, c = popt
-
+            st.write("sample is having Fano & confinement effect")
         elif mode == "Confinement":
 
             def model_fixed_q(omega, L, Gamma, shift, C, m, c):
@@ -117,7 +117,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             L, Gamma, shift, C, m, c = popt
             
             q = 1000
-
+            st.write("sample is having Confinement effect")
         elif mode == "Fano":
 
             def model_fixed_L(omega, q, Gamma, shift, C, m, c):
@@ -135,7 +135,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
 
             q, Gamma, shift, C, m, c = popt
             L = 100
-
+            st.write("sample is having Fano effect")
         # -------- FINAL FIT ----------
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
         # Manual R²
