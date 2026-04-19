@@ -155,7 +155,10 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         if mode == "Fano":   
           st.success(f"Sample is having Fano effect with q= { round(q, 3)}")
         elif mode == "Confinement":
-          st.success("Sample is having Confinement effect")
+            if L > 15:
+               st.success("Sample is not having Confinement effect")
+            else:    
+               st.success("Sample is having Confinement effect")
         elif mode == "Fano and Confinement":
           st.success("Sample is having Fano & Confinement effect")
         # -------- PLOT ----------
