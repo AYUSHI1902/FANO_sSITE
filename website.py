@@ -98,7 +98,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             )
 
             q, L, Gamma, shift, C, m, c = popt
-            st.write("sample is having Fano & confinement effect")
+           # st.write("sample is having Fano & confinement effect")
         elif mode == "Confinement":
 
             def model_fixed_q(omega, L, Gamma, shift, C, m, c):
@@ -117,7 +117,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             L, Gamma, shift, C, m, c = popt
             
             q = 1000
-            st.write("sample is having Confinement effect")
+           # st.write("sample is having Confinement effect")
         elif mode == "Fano":
 
             def model_fixed_L(omega, q, Gamma, shift, C, m, c):
@@ -135,7 +135,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
 
             q, Gamma, shift, C, m, c = popt
             L = 100
-            st.write("sample is having Fano effect")
+            #st.write("sample is having Fano effect")
         # -------- FINAL FIT ----------
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
         # Manual R²
@@ -152,6 +152,12 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         st.write("Gamma =", round(Gamma, 3))
         st.write("Function evaluations:", nfev)
         st.write("R² =", round(r2, 5))
+        if mode == "Fano":
+          st.success("Sample is having Fano effect")
+        elif mode == "Confinement":
+          st.success("Sample is having Confinement effect")
+        elif mode == "Fano and Confinement":
+          st.success("Sample is having Fano & Confinement effect")
         # -------- PLOT ----------
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
