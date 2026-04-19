@@ -160,7 +160,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             else:    
                st.success(f"Sample is having Confinement effect with L={round(L, 3)}")
         elif mode == "Fano and Confinement":
-          st.success("Sample is having Fano & Confinement effect")
+          st.success(f"Sample is having Fano & Confinement effect with q= { round(q, 3)} and L={round(L, 3)}")
         # -------- PLOT ----------
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
