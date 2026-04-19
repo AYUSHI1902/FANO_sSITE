@@ -152,8 +152,8 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         st.write("Gamma =", round(Gamma, 3))
         st.write("Function evaluations:", nfev)
         st.write("R² =", round(r2, 5))
-        if mode == "Fano":
-          st.success("Sample is having Fano effect with q=", round(q, 3))
+        if mode == "Fano":   
+          st.success("Sample is having Fano effect with q= { round(q, 3)}")
         elif mode == "Confinement":
           st.success("Sample is having Confinement effect")
         elif mode == "Fano and Confinement":
