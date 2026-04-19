@@ -162,6 +162,8 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
         ax.plot(omega_exp, fit, 'b-', label="Fitted")
+        ax.set_xlabel("Raman Shift (cm⁻¹)", fontsize=14)
+        ax.set_ylabel("Intensity (a.u.)", fontsize=14)
         ax.legend()
         ax.grid()
 
