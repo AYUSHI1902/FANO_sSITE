@@ -40,6 +40,21 @@ uploaded_file = st.file_uploader(
     type=["csv", "txt", "xlsx"]
 )
 
+def compute_r2(omega_exp, I_exp, fit, infodict):
+       mask_2 = (omega_exp >= 480) & (omega_exp <= 510)
+
+       I_exp_sub = I_exp[mask_2]
+       fit_sub = fit[mask_2]
+
+    
+       ss_res = np.sum((I_exp_sub - fit_sub) ** 2)
+       ss_tot = np.sum((I_exp_sub - np.mean(I_exp_sub)) ** 2)
+
+       r2 = 1 - ss_res / ss_tot if ss_tot != 0 else np.nan
+
+
+       nfev = infodict.get("nfev", "Not available for this mode")
+       return r2, nfev
 # -------- PROCESS ----------
 with st.spinner("Fitting Raman spectrum... Please wait"):
 
@@ -139,23 +154,9 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         # -------- FINAL FIT ----------
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
 
+        r2, nfev = compute_r2(omega_exp, I_exp, fit, infodict)
 
-
-     def compute_r2(omega_exp, I_exp, fit, infodict):
-       mask_2 = (omega_exp >= 480) & (omega_exp <= 510)
-
-       I_exp_sub = I_exp[mask_2]
-       fit_sub = fit[mask_2]
-
-    
-       ss_res = np.sum((I_exp_sub - fit_sub) ** 2)
-       ss_tot = np.sum((I_exp_sub - np.mean(I_exp_sub)) ** 2)
-
-       r2 = 1 - ss_res / ss_tot if ss_tot != 0 else np.nan
-
-
-       nfev = infodict.get("nfev", "Not available for this mode")
-       return r2, nfev
+     
        #print("R² (480–510):", r2)
 
         
