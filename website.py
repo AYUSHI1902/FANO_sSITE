@@ -140,7 +140,8 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
 
 
-        
+
+     def compute_r2(omega_exp, I_exp, fit, infodict):
        mask_2 = (omega_exp >= 480) & (omega_exp <= 510)
 
        I_exp_sub = I_exp[mask_2]
@@ -154,7 +155,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
 
 
        nfev = infodict.get("nfev", "Not available for this mode")
-
+       return r2, nfev
        #print("R² (480–510):", r2)
 
         
