@@ -138,11 +138,31 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             #st.write("sample is having Fano effect")
         # -------- FINAL FIT ----------
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
+
+
+        
+       mask_2 = (omega_exp >= 480) & (omega_exp <= 510)
+
+       I_exp_sub = I_exp[mask_2]
+       fit_sub = fit[mask_2]
+
+    
+       ss_res = np.sum((I_exp_sub - fit_sub) ** 2)
+       ss_tot = np.sum((I_exp_sub - np.mean(I_exp_sub)) ** 2)
+
+       r2 = 1 - ss_res / ss_tot if ss_tot != 0 else np.nan
+
+
+       nfev = infodict.get("nfev", "Not available for this mode")
+
+       #print("R² (480–510):", r2)
+
+        
         # Manual R²
-        ss_res = np.sum((I_exp - fit) ** 2)
-        ss_tot = np.sum((I_exp - np.mean(I_exp)) ** 2)
-        r2 = 1 - ss_res / ss_tot if ss_tot != 0 else np.nan
-        nfev = infodict.get("nfev", "Not available for this mode")
+        #ss_res = np.sum((I_exp - fit) ** 2)
+       # ss_tot = np.sum((I_exp - np.mean(I_exp)) ** 2)
+        #r2 = 1 - ss_res / ss_tot if ss_tot != 0 else np.nan
+        #nfev = infodict.get("nfev", "Not available for this mode")
 
         # -------- OUTPUT ----------
         st.subheader("Final Fitted Values")
@@ -151,8 +171,9 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         st.write("L =", round(L, 3), "nm")
         st.write("Gamma =", round(Gamma, 3))
         st.write("Function evaluations:", nfev)
-        st.write("R² =", round(r2, 5))
-        if mode == "Fano":   
+        st.write("R² (480–510)=", round(r2, 5))
+        if mode == "Fano":  
+        
           st.success(f"Sample is having Fano effect with q= { round(q, 3)}")
         elif mode == "Confinement":
             if L > 15:
