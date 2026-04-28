@@ -70,7 +70,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         I_exp = data.iloc[:, 1].values
 
         # FILTER RANGE
-        mask = (omega_exp >= 440) & (omega_exp <= 560)
+        mask = (omega_exp >= 450) & (omega_exp <= 550)
         omega_exp = omega_exp[mask]
         I_exp = I_exp[mask]
 
