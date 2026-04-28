@@ -19,7 +19,7 @@ with col1:
     a = st.number_input("a", value=0.5)
 
 with col2:
-    A = st.number_input("A value", value=171400.0)
+    A = st.number_input("A value",value=171400.0)
 
 with col3:
     B = st.number_input("B value", value=100000.0)
@@ -36,7 +36,7 @@ mode = st.selectbox(
 st.subheader("Upload Raman File")
 
 uploaded_file = st.file_uploader(
-    "Upload CSV/TXT/XLSX file (two columns)",
+    "Upload CSV//TXT/XLSX file (two columns)",
     type=["csv", "txt", "xlsx"]
 )
 
