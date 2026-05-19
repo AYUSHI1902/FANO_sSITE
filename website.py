@@ -169,11 +169,11 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         # -------- OUTPUT ----------
         st.subheader("Final Fitted Values")
         st.write("Mode:", mode)
-        st.write("q =", round(q, 3))
-        st.write("L =", round(L, 3), "nm")
-        st.write("Gamma =", round(Gamma, 3))
-        st.write("Function evaluations:", nfev)
-        st.write("R² (480–510)=", round(r2, 5))
+        #st.write("q =", round(q, 3))
+       # st.write("L =", round(L, 3), "nm")
+        #st.write("Gamma =", round(Gamma, 3))
+        #st.write("Function evaluations:", nfev)
+        #st.write("R² (480–510)=", round(r2, 5))
         if mode == "Fano":  
         
           st.success(f"Sample is having Fano effect with q= { round(q, 3)}")
