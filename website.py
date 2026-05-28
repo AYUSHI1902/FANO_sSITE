@@ -180,77 +180,94 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         #st.write("Function evaluations:", nfev)
         #st.write("R² (480–510)=", round(r2, 5))
         # -------- RESULT ----------
-        # -------- RESULT BLOCK ----------
+                  # -------- PLOT ----------
+        fig, ax = plt.subplots(figsize=(6, 5))
         
-        st.subheader("Result")
+        ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
+        ax.plot(omega_exp, fit, 'b-', label="Fitted")
+        
+        ax.set_xlabel("Raman Shift (cm⁻¹)", fontsize=12)
+        ax.set_ylabel("Intensity (a.u.)", fontsize=12)
+        
+        ax.legend()
+        ax.grid()
+        
+        st.pyplot(fig)
+        
+        # -------- RESULT TEXT ----------
         
         if mode == "Fano":
         
-            st.info(
-                f"""
-                Selected Mode : Fano
+            result_display = f"""
+            Selected Mode : Fano
         
-                This plot is showing Fano effect.
+            This plot is showing Fano effect.
         
-                q value = {round(q,3)}
+            q value = {round(q,3)}
         
-                R² (510–530) = {round(r2,5)}
-                """
-            )
+            R² (510–530) = {round(r2,5)}
+            """
+        
+            pdf_result = f"""
+            Sample is showing Fano Effect
+        
+            q = {round(q,3)}
+        
+            R² = {round(r2,5)}
+            """
         
         elif mode == "Confinement":
         
-            if L > 15:
+            result_display = f"""
+            Selected Mode : Confinement
         
-                st.info(
-                    f"""
-                    Selected Mode : Confinement
+            This plot is showing Confinement effect.
         
-                    This plot is not showing significant confinement effect.
+            L value = {round(L,3)} nm
         
-                    L value = {round(L,3)} nm
+            R² (510–530) = {round(r2,5)}
+            """
         
-                    R² (510–530) = {round(r2,5)}
-                    """
-                )
+            pdf_result = f"""
+            Sample is showing Confinement Effect
         
-            else:
+            L = {round(L,3)} nm
         
-                st.info(
-                    f"""
-                    Selected Mode : Confinement
-        
-                    This plot is showing Confinement effect.
-        
-                    L value = {round(L,3)} nm
-        
-                    R² (510–530) = {round(r2,5)}
-                    """
-                )
+            R² = {round(r2,5)}
+            """
         
         elif mode == "Fano and Confinement":
         
-            st.info(
-                f"""
-                Selected Mode : Fano and Confinement
+            result_display = f"""
+            Selected Mode : Fano and Confinement
         
-                This plot is showing both Fano and Confinement effects.
+            This plot is showing both Fano and Confinement effects.
         
-                q value = {round(q,3)}
+            q value = {round(q,3)}
         
-                L value = {round(L,3)} nm
+            L value = {round(L,3)} nm
         
-                R² (510–530) = {round(r2,5)}
-                """
-            )  
-             # -------- CREATE PDF REPORT ----------
-
-        # Save plot into memory
+            R² (510–530) = {round(r2,5)}
+            """
+        
+            pdf_result = f"""
+            Sample is showing Fano and Confinement Effect
+        
+            q = {round(q,3)}
+        
+            L = {round(L,3)} nm
+        
+            R² = {round(r2,5)}
+            """
+        
+            # -------- CREATE PDF ----------
+        
         img_buffer = BytesIO()
+        
         fig.savefig(img_buffer, format="png", dpi=300, bbox_inches='tight')
+        
         img_buffer.seek(0)
         
-        # PDF buffer
         pdf_buffer = BytesIO()
         
         doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
@@ -259,84 +276,53 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         
         elements = []
         
-        # -------- TITLE ----------
-        elements.append(Paragraph("<b>RAMAN ANALYSIS REPORT</b>", styles['Title']))
-        elements.append(Spacer(1, 12))
-        
-        # -------- FILE NAME ----------
+        # TITLE
         elements.append(
-            Paragraph(f"<b>Uploaded File:</b> {uploaded_file.name}", styles['BodyText'])
+            Paragraph("<b>RAMAN ANALYSIS REPORT</b>", styles['Title'])
         )
         
         elements.append(Spacer(1, 12))
         
-        # -------- RESULT ----------
-        if mode == "Fano":
+        # FILE NAME
+        elements.append(
+            Paragraph(
+                f"<b>Uploaded File:</b> {uploaded_file.name}",
+                styles['BodyText']
+            )
+        )
         
-            result_text = f"""
-            Sample is showing <b>Fano Effect</b><br/><br/>
-            q = {round(q,3)}<br/>
-            #R² = {round(r2,5)}
-            """
+        elements.append(Spacer(1, 12))
         
-        elif mode == "Confinement":
+        # RESULT
+        elements.append(
+            Paragraph(pdf_result.replace("\n", "<br/>"),
+            styles['BodyText'])
+        )
         
-            if L > 15:
-        
-                result_text = """
-                Sample is not showing significant confinement effect
-                """
-        
-            else:
-        
-                result_text = f"""
-                Sample is showing <b>Confinement Effect</b><br/><br/>
-                L = {round(L,3)} nm<br/>
-                #R² = {round(r2,5)}
-                """
-        
-        elif mode == "Fano and Confinement":
-        
-            result_text = f"""
-            Sample is showing <b>Fano and Confinement Effect</b><br/><br/>
-            q = {round(q,3)}<br/>
-            L = {round(L,3)} nm<br/>
-           # R² = {round(r2,5)}
-            """
-        
-        elements.append(Paragraph(result_text, styles['BodyText']))
         elements.append(Spacer(1, 20))
         
-        # -------- ADD IMAGE ----------
+        # IMAGE
         plot_image = Image(img_buffer, width=400, height=300)
         
         elements.append(plot_image)
         
-       
-        
-             # -------- BUILD PDF ----------
+        # BUILD PDF
         doc.build(elements)
         
         pdf_buffer.seek(0)
         
-            # -------- DOWNLOAD BUTTON ----------
+        # -------- RESULT BLOCK ----------
+        
+        st.subheader("Result")
+        
+        st.info(result_display)
+        
         st.download_button(
             label="Download Report",
             data=pdf_buffer,
             file_name=f"{uploaded_file.name}_Raman_Report.pdf",
             mime="application/pdf"
         )
-            # -------- PLOT ----------
-        fig, ax = plt.subplots(figsize=(6, 5))
-        ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
-        ax.plot(omega_exp, fit, 'b-', label="Fitted")
-    
-        ax.set_xlabel("Raman Shift (cm⁻¹)", fontsize=12)
-        ax.set_ylabel("Intensity (a.u.)", fontsize=12)
-        ax.legend()
-        ax.grid()
-
-        st.pyplot(fig)
 
 
        
