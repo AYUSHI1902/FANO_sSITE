@@ -179,17 +179,71 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         #st.write("Gamma =", round(Gamma, 3))
         #st.write("Function evaluations:", nfev)
         #st.write("R² (480–510)=", round(r2, 5))
-        if mode == "Fano":  
+        # -------- RESULT ----------
+        # -------- RESULT BLOCK ----------
         
-          st.success(f"Sample is having Fano effect with q= { round(q, 3)}")
+        st.subheader("Result")
+        
+        if mode == "Fano":
+        
+            st.info(
+                f"""
+                Selected Mode : Fano
+        
+                This plot is showing Fano effect.
+        
+                q value = {round(q,3)}
+        
+                R² (510–530) = {round(r2,5)}
+                """
+            )
+        
         elif mode == "Confinement":
+        
             if L > 15:
-               st.success("Sample is not having Confinement effect")
-            else:    
-               st.success(f"Sample is having Confinement effect with L={round(L, 3)}")
+        
+                st.info(
+                    f"""
+                    Selected Mode : Confinement
+        
+                    This plot is not showing significant confinement effect.
+        
+                    L value = {round(L,3)} nm
+        
+                    R² (510–530) = {round(r2,5)}
+                    """
+                )
+        
+            else:
+        
+                st.info(
+                    f"""
+                    Selected Mode : Confinement
+        
+                    This plot is showing Confinement effect.
+        
+                    L value = {round(L,3)} nm
+        
+                    R² (510–530) = {round(r2,5)}
+                    """
+                )
+        
         elif mode == "Fano and Confinement":
-          st.success(f"Sample is having Fano & Confinement effect with q= { round(q, 3)} and L={round(L, 3)}")
-        # -------- PLOT ----------
+        
+            st.info(
+                f"""
+                Selected Mode : Fano and Confinement
+        
+                This plot is showing both Fano and Confinement effects.
+        
+                q value = {round(q,3)}
+        
+                L value = {round(L,3)} nm
+        
+                R² (510–530) = {round(r2,5)}
+                """
+            )    
+            # -------- PLOT ----------
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
         ax.plot(omega_exp, fit, 'b-', label="Fitted")
@@ -235,7 +289,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             result_text = f"""
             Sample is showing <b>Fano Effect</b><br/><br/>
             q = {round(q,3)}<br/>
-            R² = {round(r2,5)}
+            #R² = {round(r2,5)}
             """
         
         elif mode == "Confinement":
@@ -251,7 +305,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
                 result_text = f"""
                 Sample is showing <b>Confinement Effect</b><br/><br/>
                 L = {round(L,3)} nm<br/>
-                R² = {round(r2,5)}
+                #R² = {round(r2,5)}
                 """
         
         elif mode == "Fano and Confinement":
@@ -260,7 +314,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             Sample is showing <b>Fano and Confinement Effect</b><br/><br/>
             q = {round(q,3)}<br/>
             L = {round(L,3)} nm<br/>
-            R² = {round(r2,5)}
+           # R² = {round(r2,5)}
             """
         
         elements.append(Paragraph(result_text, styles['BodyText']))
