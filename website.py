@@ -46,7 +46,7 @@ uploaded_file = st.file_uploader(
 )
 
 def compute_r2(omega_exp, I_exp, fit, infodict):
-       mask_2 = (omega_exp >= 480) & (omega_exp <= 510)
+       mask_2 = (omega_exp >= 510) & (omega_exp <= 530)
 
        I_exp_sub = I_exp[mask_2]
        fit_sub = fit[mask_2]
