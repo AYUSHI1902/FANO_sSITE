@@ -205,7 +205,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         
             q value = {round(q,3)}
         
-            # R² (510–530) = {round(r2,5)}
+           
             """
         
             pdf_result = f"""
@@ -215,7 +215,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             
             q = {round(q,3)}
         
-            # R² = {round(r2,5)}
+           
             """
         
         elif mode == "Confinement":
@@ -227,7 +227,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         
             L value = {round(L,3)} nm
         
-           # R² (510–530) = {round(r2,5)}
+         
             """
         
             pdf_result = f"""
@@ -236,8 +236,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             Selected Mode :  Confinement
             
             L = {round(L,3)} nm
-        
-            # R² = {round(r2,5)}
+         
             """
         
         elif mode == "Fano and Confinement":
@@ -251,7 +250,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         
             L value = {round(L,3)} nm
         
-            # R² (510–530) = {round(r2,5)}
+            
             """
         
             pdf_result = f"""
@@ -263,7 +262,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         
             L = {round(L,3)} nm
         
-           # R² = {round(r2,5)}
+          
             """
         
             # -------- CREATE PDF ----------
