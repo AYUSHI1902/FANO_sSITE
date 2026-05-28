@@ -242,33 +242,8 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         
                 R² (510–530) = {round(r2,5)}
                 """
-            )    
-             # -------- BUILD PDF ----------
-        doc.build(elements)
-        
-        pdf_buffer.seek(0)
-        
-            # -------- DOWNLOAD BUTTON ----------
-        st.download_button(
-            label="Download Report",
-            data=pdf_buffer,
-            file_name=f"{uploaded_file.name}_Raman_Report.pdf",
-            mime="application/pdf"
-        )
-            # -------- PLOT ----------
-        fig, ax = plt.subplots(figsize=(6, 5))
-        ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
-        ax.plot(omega_exp, fit, 'b-', label="Fitted")
-    
-        ax.set_xlabel("Raman Shift (cm⁻¹)", fontsize=12)
-        ax.set_ylabel("Intensity (a.u.)", fontsize=12)
-        ax.legend()
-        ax.grid()
-
-        st.pyplot(fig)
-
-
-        # -------- CREATE PDF REPORT ----------
+            )  
+             # -------- CREATE PDF REPORT ----------
 
         # Save plot into memory
         img_buffer = BytesIO()
@@ -339,6 +314,32 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         
        
         
+             # -------- BUILD PDF ----------
+        doc.build(elements)
+        
+        pdf_buffer.seek(0)
+        
+            # -------- DOWNLOAD BUTTON ----------
+        st.download_button(
+            label="Download Report",
+            data=pdf_buffer,
+            file_name=f"{uploaded_file.name}_Raman_Report.pdf",
+            mime="application/pdf"
+        )
+            # -------- PLOT ----------
+        fig, ax = plt.subplots(figsize=(6, 5))
+        ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
+        ax.plot(omega_exp, fit, 'b-', label="Fitted")
+    
+        ax.set_xlabel("Raman Shift (cm⁻¹)", fontsize=12)
+        ax.set_ylabel("Intensity (a.u.)", fontsize=12)
+        ax.legend()
+        ax.grid()
+
+        st.pyplot(fig)
+
+
+       
 
     else:
         st.warning("Upload file first")
