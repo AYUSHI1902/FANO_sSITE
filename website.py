@@ -243,6 +243,11 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
                 R² (510–530) = {round(r2,5)}
                 """
             )    
+             # -------- BUILD PDF ----------
+        doc.build(elements)
+        
+        pdf_buffer.seek(0)
+        
             # -------- DOWNLOAD BUTTON ----------
         st.download_button(
             label="Download Report",
@@ -332,11 +337,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         
         elements.append(plot_image)
         
-        # -------- BUILD PDF ----------
-        doc.build(elements)
-        
-        pdf_buffer.seek(0)
-        
+       
         
 
     else:
