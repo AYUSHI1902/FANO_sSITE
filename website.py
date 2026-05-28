@@ -4,6 +4,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.optimize import curve_fit
 
+from io import BytesIO
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import letter
+
 st.set_page_config(page_title="Raman-Fano line-shape", layout="centered")
 
 st.title("Raman-Fano line-shape plot")
@@ -188,12 +193,96 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
         ax.plot(omega_exp, fit, 'b-', label="Fitted")
+    
         ax.set_xlabel("Raman Shift (cm⁻¹)", fontsize=12)
         ax.set_ylabel("Intensity (a.u.)", fontsize=12)
         ax.legend()
         ax.grid()
 
         st.pyplot(fig)
+
+
+        # -------- CREATE PDF REPORT ----------
+
+        # Save plot into memory
+        img_buffer = BytesIO()
+        fig.savefig(img_buffer, format="png", dpi=300, bbox_inches='tight')
+        img_buffer.seek(0)
+        
+        # PDF buffer
+        pdf_buffer = BytesIO()
+        
+        doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+        
+        styles = getSampleStyleSheet()
+        
+        elements = []
+        
+        # -------- TITLE ----------
+        elements.append(Paragraph("<b>RAMAN ANALYSIS REPORT</b>", styles['Title']))
+        elements.append(Spacer(1, 12))
+        
+        # -------- FILE NAME ----------
+        elements.append(
+            Paragraph(f"<b>Uploaded File:</b> {uploaded_file.name}", styles['BodyText'])
+        )
+        
+        elements.append(Spacer(1, 12))
+        
+        # -------- RESULT ----------
+        if mode == "Fano":
+        
+            result_text = f"""
+            Sample is showing <b>Fano Effect</b><br/><br/>
+            q = {round(q,3)}<br/>
+            R² = {round(r2,5)}
+            """
+        
+        elif mode == "Confinement":
+        
+            if L > 15:
+        
+                result_text = """
+                Sample is not showing significant confinement effect
+                """
+        
+            else:
+        
+                result_text = f"""
+                Sample is showing <b>Confinement Effect</b><br/><br/>
+                L = {round(L,3)} nm<br/>
+                R² = {round(r2,5)}
+                """
+        
+        elif mode == "Fano and Confinement":
+        
+            result_text = f"""
+            Sample is showing <b>Fano and Confinement Effect</b><br/><br/>
+            q = {round(q,3)}<br/>
+            L = {round(L,3)} nm<br/>
+            R² = {round(r2,5)}
+            """
+        
+        elements.append(Paragraph(result_text, styles['BodyText']))
+        elements.append(Spacer(1, 20))
+        
+        # -------- ADD IMAGE ----------
+        plot_image = Image(img_buffer, width=400, height=300)
+        
+        elements.append(plot_image)
+        
+        # -------- BUILD PDF ----------
+        doc.build(elements)
+        
+        pdf_buffer.seek(0)
+        
+        # -------- DOWNLOAD BUTTON ----------
+        st.download_button(
+            label="Download Report",
+            data=pdf_buffer,
+            file_name=f"{uploaded_file.name}_Raman_Report.pdf",
+            mime="application/pdf"
+        )
 
     else:
         st.warning("Upload file first")
