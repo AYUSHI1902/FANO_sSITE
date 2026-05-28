@@ -210,7 +210,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         
             pdf_result = f"""
             Sample is showing Fano Effect
-        
+            Selected Mode : Fano 
             q = {round(q,3)}
         
             R² = {round(r2,5)}
@@ -230,7 +230,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         
             pdf_result = f"""
             Sample is showing Confinement Effect
-        
+            Selected Mode :  Confinement
             L = {round(L,3)} nm
         
             R² = {round(r2,5)}
@@ -252,7 +252,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         
             pdf_result = f"""
             Sample is showing Fano and Confinement Effect
-        
+            Selected Mode : Fano and Confinement
             q = {round(q,3)}
         
             L = {round(L,3)} nm
