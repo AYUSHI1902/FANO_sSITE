@@ -243,6 +243,13 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
                 R² (510–530) = {round(r2,5)}
                 """
             )    
+            # -------- DOWNLOAD BUTTON ----------
+        st.download_button(
+            label="Download Report",
+            data=pdf_buffer,
+            file_name=f"{uploaded_file.name}_Raman_Report.pdf",
+            mime="application/pdf"
+        )
             # -------- PLOT ----------
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.plot(omega_exp, I_exp, 'r.', label="Experimental")
@@ -330,13 +337,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         
         pdf_buffer.seek(0)
         
-        # -------- DOWNLOAD BUTTON ----------
-        st.download_button(
-            label="Download Report",
-            data=pdf_buffer,
-            file_name=f"{uploaded_file.name}_Raman_Report.pdf",
-            mime="application/pdf"
-        )
+        
 
     else:
         st.warning("Upload file first")
