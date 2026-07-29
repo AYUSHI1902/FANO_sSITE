@@ -154,7 +154,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             )
 
             q, Gamma, shift, C, m, c = popt
-            L = 100
+            L = 1000
             #st.write("sample is having Fano effect")
         # -------- FINAL FIT ----------
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
