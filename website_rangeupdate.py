@@ -186,10 +186,13 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             )
 
             q, Gamma, omega0, C, m, c = popt
+             fit = fano(omega, q, Gamma, omega0, C, m, c)
             #st.write("sample is having Fano effect")
         # -------- FINAL FIT ----------
+        if mode == "Fano and Confinement"  or  mode == "Confinement" :
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
-
+        elif mode == "fano":
+        fit = fano(omega, q, Gamma, omega0, C, m, c)
         r2, nfev = compute_r2(omega_exp, I_exp, fit, infodict)
 
      
