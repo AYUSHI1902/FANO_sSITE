@@ -180,7 +180,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
                 I_exp,
                 p0=[ 0, 6, omega_exp[np.argmax(I_exp)], 100, 0, 10 ],
                 bounds=([-10, 1, 300, 0, -10, -500],
-                        [10, 30, 540, 1e6, 10, 500]),
+                        [10, 30, 600, 1e6, 10, 500]),
                 maxfev=40000,
                 full_output=True
             )
