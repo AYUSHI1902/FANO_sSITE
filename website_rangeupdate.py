@@ -141,20 +141,20 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
         elif mode == "Fano":
 
             def model_fixed_L(omega, q, Gamma, shift, C, m, c):
-                return fano_model(omega, q, 50, Gamma, shift, C, m, c)
+                return fano_model(omega, q, 80, Gamma, shift, C, m, c)
 
             popt, _ = curve_fit(
                 model_fixed_L,
                 omega_exp,
                 I_exp,
-                p0=[0, 6, 0, 100, 0, 10],
+                p0=[1, 6, 0, 100, 0, 10],
                 bounds=([-10, 1, -10, 0, -10, -500],
                         [10, 30, 10, 1e6, 10, 500]),
                 maxfev=40000
             )
 
             q, Gamma, shift, C, m, c = popt
-            L = 50
+            L = 80
             #st.write("sample is having Fano effect")
         # -------- FINAL FIT ----------
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
