@@ -103,6 +103,18 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
 
             return C * I + background
         infodict = {"nfev": None}
+
+        def fano(omega, q, Gamma, omega0, C, m, c):
+   
+
+            eps = (omega - omega0) / (Gamma / 2)
+
+            I = ((q + eps) ** 2) / (1 + eps ** 2)
+
+            background = m * omega + c
+
+            return C * I + background
+        infodict = {"nfev": None}
         # -------- FITTING ----------
         if mode == "Fano and Confinement":
 
@@ -140,21 +152,40 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
             #st.write("sample is having Confinement effect")
         elif mode == "Fano":
 
-            def model_fixed_L(omega, q, Gamma, shift, C, m, c):
-                return fano_model(omega, q, 80, Gamma, shift, C, m, c)
+            #def model_fixed_L(omega, q, Gamma, shift, C, m, c):
+               # return fano_model(omega, q, 80, Gamma, shift, C, m, c)
 
-            popt, _ = curve_fit(
-                model_fixed_L,
+            #popt, _ = curve_fit(
+              #  model_fixed_L,
+               # omega_exp,
+               # I_exp,
+                #p0=[0.5, 6, 0, 100, 0, 10],
+                #bounds=([-10, 1, -10, 0, -10, -500],
+                 #       [10, 30, 10, 1e6, 10, 500]),
+                #maxfev=40000
+            #)
+
+            #q, Gamma, shift, C, m, c = popt
+            #L = 80
+
+
+
+
+
+            def fano(omega, q, Gamma, omega0, C, m, c):
+                return fano(omega, q, Gamma, omega0, C, m, c)
+            popt, pcov, infodict, errmsg, ier  = curve_fit(
+                fano_model,
                 omega_exp,
                 I_exp,
-                p0=[0.5, 6, 0, 100, 0, 10],
-                bounds=([-10, 1, -10, 0, -10, -500],
-                        [10, 30, 10, 1e6, 10, 500]),
-                maxfev=40000
+                p0=[ 0.5, 6, omega_exp[np.argmax(I_exp)], 100, 0, 10 ],
+                bounds=([-10, 1, 500, 0, -10, -500],
+                        [10, 30, 540, 1e6, 10, 500]),
+                maxfev=40000,
+                full_output=True
             )
 
-            q, Gamma, shift, C, m, c = popt
-            L = 80
+            q, Gamma, omega0, C, m, c = popt
             #st.write("sample is having Fano effect")
         # -------- FINAL FIT ----------
         fit = fano_model(omega_exp, q, L, Gamma, shift, C, m, c)
