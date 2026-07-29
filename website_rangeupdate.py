@@ -178,7 +178,7 @@ with st.spinner("Fitting Raman spectrum... Please wait"):
                 fano_model,
                 omega_exp,
                 I_exp,
-                p0=[ 0.5, 6, omega_exp[np.argmax(I_exp)], 100, 0, 10 ],
+                p0=[ 0, 6, omega_exp[np.argmax(I_exp)], 100, 0, 10 ],
                 bounds=([-10, 1, 500, 0, -10, -500],
                         [10, 30, 540, 1e6, 10, 500]),
                 maxfev=40000,
