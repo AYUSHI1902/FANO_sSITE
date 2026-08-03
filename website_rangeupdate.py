@@ -11,7 +11,7 @@ from reportlab.lib.pagesizes import letter
 
 st.set_page_config(page_title="Raman-Fano line-shape", layout="centered")
 
-st.title("Raman-Fano line-shape plot")
+st.title("Raman-Fano, line-shape plot")
 st.write("Enter parameters and upload file")
 
 # -------- PARAMETERS ----------
