@@ -41,7 +41,7 @@ mode = st.selectbox(
 st.subheader("Upload Raman File")
 
 uploaded_file = st.file_uploader(
-    "Upload CSV//TXT/XLSX file (two columns)",
+    "Upload CSV/TXT/XLSX file (two columns)",
     type=["csv", "txt", "xlsx"]
 )
 
